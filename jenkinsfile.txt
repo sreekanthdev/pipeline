@@ -1,0 +1,48 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('Continuous Download')
+        {
+            steps
+            {
+                git 'https://github.com/selenium-saikrishna/maven.git'
+            }
+        }
+        stage('Continuous Build')
+        {
+            steps
+            {
+                sh label: '', script: 'mvn package'
+            }
+        }
+        stage('Continuous Deployment')
+        {
+            steps
+            {
+                sh label: '', script: 'scp /home/ubuntu/.jenkins/workspace/declarativepipeline/webapp/target/webapp.war ubuntu@172.31.90.28:/var/lib/tomcat8/webapps/qn1.war'
+            }
+        }
+        stage('Continuous Testing')
+        {
+            steps
+            {
+                git 'https://github.com/selenium-saikrishna/FunctionalTesting.git'
+            }
+        }
+    }
+    post
+        {
+            success
+            {
+                sh label: '', script: 'scp /home/ubuntu/.jenkins/workspace/declarativepipeline/webapp/target/webapp.war ubuntu@172.31.94.126:/var/lib/tomcat8/webapps/pd1.war'
+            }
+            failure
+            {
+                mail bcc: '', body: '''HI!
+                Your Build is failed so can you check your code..
+                Thank You!!''', cc: '', from: '', replyTo: '', subject: 'Build Problem', to: 'sreekanthbujji24@gmail.com sreekanth.g2498@gmail.com sreekanthdevops1996@gmail.com'
+            }
+        }
+}
